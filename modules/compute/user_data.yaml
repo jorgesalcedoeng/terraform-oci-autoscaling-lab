@@ -1,0 +1,28 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - nginx
+
+runcmd:
+  # Habilitar y configurar firewall
+  - apt install -y ufw
+  - ufw allow OpenSSH
+  - ufw allow 'Nginx HTTP'
+  - ufw --force enable
+
+  # Habilitar y arrancar nginx
+  - systemctl enable nginx
+  - systemctl start nginx
+
+  # Crear página de inicio
+  - |
+    bash -c 'cat <<EOF > /var/www/html/index.html
+    <h1>VM desplegada con Terraform en OCI</h1>
+    <p>Host: $(hostname)</p>
+    <p>IP: $(hostname -I | awk "{print \$1}")</p>
+    EOF'
+  
+  - systemctl restart nginx
+  
