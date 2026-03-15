@@ -291,5 +291,5 @@ https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/autoscalinginstancepool
 
 **Jorge Salcedo**
 
-Cloud Solution Architect / DevOps Engineer \
+Cloud / DevOps Engineer\
 https://github.com/jorgesalcedoeng
