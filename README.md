@@ -1,67 +1,67 @@
 # OCI Autoscaling Infrastructure with Terraform
 
-![Terraform](https://img.shields.io/badge/Terraform-%3E%3D1.5-623CE4?logo=terraform)
-![OCI](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?logo=oracle)
+![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-623CE4?logo=terraform&logoColor=white)
+![Oracle
+Cloud](https://img.shields.io/badge/Oracle%20Cloud-OCI-F80000?logo=oracle&logoColor=white)
 ![IaC](https://img.shields.io/badge/Infrastructure-as-Code-blue)
 ![DevOps](https://img.shields.io/badge/DevOps-Automation-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ------------------------------------------------------------------------
 
 # Overview
 
-This repository contains a **modular Terraform implementation for
-deploying scalable infrastructure in Oracle Cloud Infrastructure
-(OCI)**.
+This project provides a **modular Terraform implementation for deploying
+an autoscaling architecture in Oracle Cloud Infrastructure (OCI)**.
 
-The project provisions a **production-ready environment** including:
+The infrastructure provisions a **production-style cloud architecture**
+including:
 
 -   Virtual Cloud Network (VCN)
 -   Public and Private Subnets
--   Internet and NAT Gateways
--   Bastion Host for secure access
--   Load Balancer
--   Compute Instance Pool
+-   Internet Gateway and NAT Gateway
+-   Bastion Host
+-   OCI Load Balancer
+-   Compute Instance Configuration
+-   Instance Pool
 -   Autoscaling Policies
--   Network Security Groups
+-   Network Security Groups (NSG)
+-   Flow Logs
 
-The infrastructure is designed following **Infrastructure as Code (IaC),
-DevOps and Cloud Architecture best practices**.
+The solution follows **Infrastructure as Code (IaC), DevOps and Cloud
+Architecture best practices**.
 
 ------------------------------------------------------------------------
 
 # Architecture
 
-The architecture deploys a **highly available autoscaling compute layer
-behind a public load balancer**.
+                        Internet
+                           │
+                           ▼
+                   ┌─────────────────┐
+                   │ OCI LoadBalancer│
+                   │     Public      │
+                   └────────┬────────┘
+                            │
+                     ┌──────▼──────┐
+                     │ InstancePool│
+                     │ AutoScaling │
+                     │ Private Sub │
+                     └──────┬──────┘
+                            │
+                   ┌────────▼────────┐
+                   │ Private Network │
+                   │ NSG + Routing   │
+                   └─────────────────┘
 
-                            Internet
-                               │
-                               ▼
-                     ┌────────────────────┐
-                     │   OCI Load Balancer │
-                     │      (Public)       │
-                     └─────────┬───────────┘
-                               │
-                     ┌─────────▼─────────┐
-                     │   Instance Pool   │
-                     │  Auto Scaling     │
-                     │ (Private Subnet)  │
-                     └─────────┬─────────┘
-                               │
-                     ┌─────────▼─────────┐
-                     │   Private Network │
-                     │   Security Groups │
-                     └───────────────────┘
-
-                ┌───────────────────────────────┐
-                │ Bastion Host (Public Subnet)  │
-                │ Secure SSH Access             │
-                └───────────────────────────────┘
+            ┌─────────────────────────────┐
+            │ Bastion Host (Public Subnet)│
+            │ Secure SSH Access           │
+            └─────────────────────────────┘
 
 ------------------------------------------------------------------------
 
-# Project Structure
+# Repository Structure
 
     oci-autoscaling/
     │
@@ -73,44 +73,35 @@ behind a public load balancer**.
     ├── terraform.tfvars
     │
     ├── modules/
-    │
     │   ├── network/
-    │   │   ├── vcn.tf
-    │   │   ├── subnets.tf
-    │   │   ├── gateways.tf
-    │   │   ├── routes.tf
-    │   │   ├── nsg.tf
-    │   │   └── flow_logs.tf
-    │   │
     │   ├── compute/
-    │   │   ├── instance_configuration.tf
-    │   │   ├── instance_pool.tf
-    │   │   └── user_data.yaml
-    │   │
     │   ├── loadbalancer/
-    │   │   ├── loadbalancer.tf
-    │   │   ├── backendset.tf
-    │   │   └── listener.tf
-    │   │
     │   ├── autoscaling/
-    │   │   └── autoscaling.tf
-    │   │
     │   └── bastion/
-    │       └── bastion.tf
     │
     └── README.md
 
 ------------------------------------------------------------------------
 
-# Modules Description
+# Modules
 
-  Module         Description
-  -------------- ---------------------------------------------------------
-  network        Creates VCN, subnets, routing tables, gateways and NSGs
-  compute        Deploys instance configuration and instance pool
-  loadbalancer   Creates OCI Load Balancer and backend configuration
-  autoscaling    Defines autoscaling policies for instance pools
-  bastion        Deploys bastion host for secure remote access
+  -----------------------------------------------------------------------
+  Module                 Description
+  ---------------------- ------------------------------------------------
+  **network**            Creates VCN, subnets, gateways, routing tables
+                         and NSGs
+
+  **compute**            Creates instance configuration and instance
+                         pools
+
+  **loadbalancer**       Deploys OCI Load Balancer, backend sets and
+                         listeners
+
+  **autoscaling**        Defines autoscaling policies
+
+  **bastion**            Bastion host used to access private instances
+                         securely
+  -----------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 
@@ -119,14 +110,14 @@ behind a public load balancer**.
   Tool           Version
   -------------- -------------
   Terraform      \>= 1.5
-  OCI Provider   \>= 5.0
+  OCI Provider   \>= 5.x
   OCI CLI        Recommended
 
 ------------------------------------------------------------------------
 
-# OCI Provider Configuration
+# Provider Configuration
 
-Terraform uses the **OCI CLI configuration file** for authentication.
+Terraform authenticates using the **OCI CLI configuration file**.
 
 Example:
 
@@ -151,76 +142,83 @@ provider "oci" {
 
 # Input Variables
 
-  ------------------------------------------------------------------------
-  Variable              Description                        Type
-  --------------------- ---------------------------------- ---------------
-  compartment_ocid      OCI compartment where resources    string
-                        will be deployed                   
+  ------------------------------------------------------------------------------------------------
+  Name                  Description             Type          Default               Required
+  --------------------- ----------------------- ------------- --------------------- --------------
+  compartment_ocid      OCI compartment OCID    string        n/a                   yes
+                        where resources will be                                     
+                        deployed                                                    
 
-  project_name          Resource naming prefix             string
+  project_name          Prefix used to name     string        autoscaling           no
+                        resources                                                   
 
-  vcn_cidr              CIDR block for the VCN             string
+  vcn_cidr              CIDR block for the VCN  string        10.0.0.0/16           no
 
-  public_subnet_cidr    CIDR block for public subnet       string
+  public_subnet_cidr    CIDR block for public   string        10.0.1.0/24           no
+                        subnet                                                      
 
-  private_subnet_cidr   CIDR block for private subnet      string
+  private_subnet_cidr   CIDR block for private  string        10.0.2.0/24           no
+                        subnet                                                      
 
-  instance_shape        Compute instance shape             string
+  instance_shape        Shape of compute        string        VM.Standard.E4.Flex   no
+                        instances                                                   
 
-  instance_count        Initial number of instances        number
+  instance_count        Initial number of       number        2                     no
+                        instances                                                   
 
-  tags                  Resource tags                      map(string)
-  ------------------------------------------------------------------------
+  tags                  Freeform tags applied   map(string)   {}                    no
+                        to resources                                                
+  ------------------------------------------------------------------------------------------------
 
 Example:
 
 ``` hcl
-project_name = "oci-autoscaling-lab"
-vcn_cidr = "10.0.0.0/16"
+compartment_ocid = "ocid1.compartment.oc1..."
+project_name     = "oci-autoscaling-lab"
 ```
 
 ------------------------------------------------------------------------
 
 # Outputs
 
-  Output              Description
-  ------------------- ----------------------------
-  vcn_id              ID of created VCN
-  public_subnet_id    Public subnet identifier
-  private_subnet_id   Private subnet identifier
-  load_balancer_ip    Public IP of load balancer
-  instance_pool_id    Instance pool identifier
+  Name                Description
+  ------------------- ----------------------------------------
+  vcn_id              ID of the created VCN
+  public_subnet_id    ID of the public subnet
+  private_subnet_id   ID of the private subnet
+  loadbalancer_ip     Public IP address of the Load Balancer
+  instance_pool_id    ID of the Instance Pool
 
 ------------------------------------------------------------------------
 
-# Deployment Guide
+# Deployment
 
-## 1. Clone repository
+## 1 Clone repository
 
 ``` bash
 git clone https://github.com/your-org/oci-autoscaling.git
 cd oci-autoscaling
 ```
 
-## 2. Initialize Terraform
+## 2 Initialize Terraform
 
 ``` bash
 terraform init
 ```
 
-## 3. Validate configuration
+## 3 Validate configuration
 
 ``` bash
 terraform validate
 ```
 
-## 4. Review execution plan
+## 4 Review execution plan
 
 ``` bash
 terraform plan
 ```
 
-## 5. Deploy infrastructure
+## 5 Deploy infrastructure
 
 ``` bash
 terraform apply
@@ -230,8 +228,7 @@ terraform apply
 
 # Autoscaling Strategy
 
-Autoscaling is implemented using **OCI Instance Pools and Autoscaling
-Policies**.
+Autoscaling is implemented using **OCI Instance Pools**.
 
   Metric                   Action
   ------------------------ -----------
@@ -240,49 +237,43 @@ Policies**.
 
 Benefits:
 
+-   High availability
 -   Elastic infrastructure
 -   Cost optimization
--   High availability
 
 ------------------------------------------------------------------------
 
 # Security Best Practices
 
-The infrastructure implements multiple security controls:
+This infrastructure implements several security measures:
 
--   Private subnet for compute nodes
--   Public exposure only via load balancer
+-   Private subnet for compute instances
+-   Public access only through the load balancer
 -   Bastion host for controlled SSH access
 -   Network Security Groups
--   Flow logs for monitoring
+-   Flow logs for traffic monitoring
 
 ------------------------------------------------------------------------
 
-# DevOps Best Practices Implemented
+# DevOps Practices
+
+The project follows DevOps principles:
 
 -   Infrastructure as Code
--   Modular Terraform design
--   Reusable infrastructure modules
+-   Modular Terraform architecture
+-   Reusable modules
 -   Parameterized configuration
--   Tagging strategy
--   Scalable compute architecture
+-   Consistent tagging strategy
+-   Scalable infrastructure design
 
 ------------------------------------------------------------------------
 
-# Future Improvements
+# Possible Improvements
 
-Possible enhancements:
+Future enhancements may include:
 
 -   Remote Terraform backend using OCI Object Storage
--   CI/CD pipeline using GitHub Actions
--   OCI Monitoring and alarms
+-   CI/CD pipelines using GitHub Actions
+-   OCI Monitoring and Alerts
 -   Web Application Firewall (WAF)
--   Blue/Green deployments
-
-------------------------------------------------------------------------
-
-# Author
-
-Jorge Salcedo
-Cloud Solution Architect
-
+-   Blue/Green deployment strategies
