@@ -1,4 +1,4 @@
-# 🚀 OCI Autoscaling Lab with Terraform
+# Terraform OCI Autoscaling Lab
 
 ![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?logo=terraform)
 ![Oracle
@@ -274,12 +274,22 @@ Este laboratorio permite comprender:
 
 ------------------------------------------------------------------------
 
+# Referencias
+
+Terraform Documentation\
+https://developer.hashicorp.com/terraform/docs
+
+OCI Terraform Provider\
+https://registry.terraform.io/providers/oracle/oci/latest/docs
+
+OCI Autoscaling\
+https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/autoscalinginstancepools.htm
+
+------------------------------------------------------------------------
+
 # Autor
 
 **Jorge Salcedo**
 
-Cloud Solution Architect / DevOps Engineer\
+Cloud Solution Architect / DevOps Engineer \
 https://github.com/jorgesalcedoeng
-
-------------------------------------------------------------------------
-
