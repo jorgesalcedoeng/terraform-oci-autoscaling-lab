@@ -3,7 +3,6 @@
 
 ![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-623CE4?logo=terraform&logoColor=white)
 ![OCI](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?logo=oracle&logoColor=white)
-![IaC](https://img.shields.io/badge/Infrastructure-as-Code-blue)
 ![DevOps](https://img.shields.io/badge/DevOps-Automation-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
