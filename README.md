@@ -173,15 +173,11 @@ Este archivo permite parametrizar el despliegue sin modificar el código Terrafo
 
 El laboratorio incluye soporte para **tags consistentes en todos los recursos**, lo que facilita la administración, auditoría y control de costos.
 
-Ejemplo de estructura:
-
 | Tag         | Valor           | Descripción                 |
 | ----------- | --------------- | --------------------------- |
 | environment | dev             | Ambiente de despliegue      |
 | managed_by  | terraform       | Identifica IaC              |
 | project     | autoscaling-lab | Identificación del proyecto |
-
-Los tags pueden ampliarse fácilmente mediante la variable `tags`.
 
 ---
 
@@ -251,8 +247,6 @@ Beneficios:
 
 El módulo `loadbalancer` despliega un **Load Balancer público** que distribuye el tráfico entrante hacia las instancias del pool.
 
-Configuración principal:
-
 | Componente   | Función                               |
 | ------------ | ------------------------------------- |
 | Listener     | Recibe tráfico HTTP                   |
@@ -273,11 +267,83 @@ La seguridad se implementa mediante:
 
 ---
 
+# Testing del Auto Scaling (Generación de carga)
+
+Para observar el comportamiento del **Auto Scaling**, es posible generar carga artificial en una de las instancias utilizando la herramienta `stress`. Esto permitirá incrementar el uso de CPU y activar las políticas de escalamiento configuradas en OCI.
+
+## 1. Conectarse a una instancia
+
+Primero conectarse al servidor mediante SSH (generalmente desde el bastion).
+
+```
+ssh ubuntu@<IP_INSTANCE>
+```
+
+---
+
+## 2. Instalar stress en Ubuntu
+
+Actualizar repositorios:
+
+```
+sudo apt update
+```
+
+Instalar la herramienta:
+
+```
+sudo apt install stress -y
+```
+
+Verificar instalación:
+
+```
+stress --version
+```
+
+---
+
+## 3. Generar carga de CPU
+
+Ejecutar el siguiente comando para generar carga en la CPU:
+
+```
+stress --cpu 4 --timeout 300
+```
+
+Descripción del comando:
+
+| Parámetro     | Descripción                           |
+| ------------- | ------------------------------------- |
+| --cpu 4       | Genera carga en 4 workers de CPU      |
+| --timeout 300 | Ejecuta la carga durante 300 segundos |
+
+Esto provocará un incremento significativo en el uso de CPU.
+
+---
+
+## 4. Observar el escalamiento
+
+Mientras se ejecuta la carga, se puede observar el comportamiento del autoscaling en **OCI Console**:
+
+1. Ir a **Compute**
+2. Seleccionar **Instance Pools**
+3. Abrir el **Instance Pool creado por Terraform**
+4. Ir a la sección **Autoscaling**
+
+También se pueden observar métricas en:
+
+**Observability & Management → Metrics → CPU Utilization**
+
+Cuando el uso de CPU supere el umbral configurado en la política de autoscaling, OCI comenzará a **crear nuevas instancias automáticamente**.
+
+Una vez finalizada la carga, el sistema reducirá gradualmente el número de instancias según las políticas configuradas.
+
+---
+
 # Outputs
 
 Los outputs definidos en `outputs.tf` exponen información útil después del despliegue.
-
-Ejemplos típicos:
 
 | Output            | Descripción                            |
 | ----------------- | -------------------------------------- |
@@ -327,4 +393,4 @@ Este proyecto sigue buenas prácticas de Terraform y OCI:
 
 # Licencia
 
-Este proyecto puede utilizarse con fines educativos, de laboratorio o demostración en entornos Oracle Cloud Infrastructure.
+Este proyecto puede utilizarse con fines educativos, de laboratorio o demostración en entornos **Oracle Cloud Infrastructure**.
