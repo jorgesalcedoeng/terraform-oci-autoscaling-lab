@@ -1,114 +1,126 @@
+# OCI Autoscaling Lab with Terraform
 
-# 🚀 OCI Autoscaling Infrastructure con Terraform
+Este proyecto implementa un laboratorio completo de **Auto Scaling en Oracle Cloud Infrastructure (OCI)** utilizando **Terraform**. La infraestructura desplegada permite simular un entorno real de escalamiento automático basado en carga, incluyendo red, balanceador, pool de instancias y políticas de autoscaling.
 
-![Terraform](https://img.shields.io/badge/Terraform-1.5%2B-623CE4?logo=terraform&logoColor=white)
-![OCI](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?logo=oracle&logoColor=white)
-![DevOps](https://img.shields.io/badge/DevOps-Automation-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+El objetivo principal es proporcionar un entorno reproducible para **pruebas, demostraciones o aprendizaje** sobre cómo implementar arquitecturas escalables en OCI utilizando **Infrastructure as Code (IaC)**.
 
----
+La solución despliega automáticamente los siguientes componentes:
 
-# 📘 Descripción
+* Virtual Cloud Network (VCN)
+* Subred pública y privada
+* Internet Gateway y reglas de ruteo
+* Bastion Host para acceso administrativo
+* Load Balancer público
+* Instance Configuration
+* Instance Pool
+* Políticas de Auto Scaling
+* Network Security Groups
+* Flow Logs
+* Etiquetado de recursos
 
-Este proyecto implementa **Infraestructura como Código (IaC)** utilizando **Terraform** para desplegar una arquitectura escalable en **Oracle Cloud Infrastructure (OCI)**.
-
-La solución crea automáticamente:
-
-- Virtual Cloud Network (VCN)
-- Subred pública y privada
-- Bastion Host
-- Load Balancer
-- Instance Configuration
-- Instance Pool
-- Autoscaling
-- Network Security Groups (NSG)
-- Flow Logs
-
-El objetivo del proyecto es demostrar cómo implementar **infraestructura escalable y segura en OCI** siguiendo buenas prácticas de **Cloud Architecture y DevOps**.
+Toda la infraestructura se gestiona mediante **Terraform**, permitiendo crear, modificar o destruir el laboratorio de forma controlada y repetible.
 
 ---
 
-# 🏗 Arquitectura
+# Arquitectura
+
+El laboratorio implementa una arquitectura típica de aplicaciones escalables en OCI:
 
 ```
-                    Internet
-                       │
-                       ▼
-               ┌─────────────────┐
-               │ OCI LoadBalancer│
-               │   (Public)      │
-               └────────┬────────┘
-                        │
-                ┌───────▼────────┐
-                │ Instance Pool  │
-                │ AutoScaling    │
-                │ Private Subnet │
-                └───────┬────────┘
-                        │
-                ┌───────▼────────┐
-                │   Private VCN  │
-                │ Security Rules │
-                └────────────────┘
-
-        ┌─────────────────────────────┐
-        │ Bastion Host (Public Subnet)│
-        │ Acceso SSH seguro           │
-        └─────────────────────────────┘
+Internet
+   │
+   │
+Public Load Balancer
+   │
+   │
+Instance Pool (Auto Scaling)
+   │
+   │
+Private Subnet
+   │
+   │
+Bastion Host (Public Subnet)
 ```
+
+Componentes principales:
+
+| Componente             | Descripción                                            |
+| ---------------------- | ------------------------------------------------------ |
+| VCN                    | Red virtual principal donde se despliegan los recursos |
+| Subnet pública         | Utilizada por el Load Balancer y el Bastion            |
+| Subnet privada         | Aloja las instancias del Instance Pool                 |
+| Bastion                | Permite acceso SSH seguro a recursos internos          |
+| Load Balancer          | Distribuye tráfico hacia las instancias                |
+| Instance Configuration | Plantilla base para crear instancias                   |
+| Instance Pool          | Grupo de instancias gestionadas                        |
+| Auto Scaling           | Escala automáticamente las instancias                  |
+| NSG                    | Seguridad a nivel de red                               |
+| Flow Logs              | Monitoreo del tráfico de red                           |
 
 ---
 
-# 📂 Estructura del Repositorio
+# Estructura del Proyecto
+
+El proyecto sigue una arquitectura modular para mejorar la reutilización y el mantenimiento del código Terraform.
 
 ```
-terraform-oci-autoscaling
-│
+.
 ├── main.tf
 ├── provider.tf
 ├── versions.tf
 ├── variables.tf
 ├── outputs.tf
 ├── terraform.tfvars
-│
 ├── modules
-│   ├── network
-│   ├── compute
-│   ├── loadbalancer
-│   ├── autoscaling
-│   └── bastion
 │
-└── README.md
+├── network
+│   ├── vcn.tf
+│   ├── subnets.tf
+│   ├── gateways.tf
+│   ├── routes.tf
+│   ├── nsg.tf
+│   └── flow_logs.tf
+│
+├── bastion
+│   └── bastion.tf
+│
+├── loadbalancer
+│   ├── loadbalancer.tf
+│   ├── listener.tf
+│   └── backendset.tf
+│
+├── compute
+│   ├── instance_configuration.tf
+│   ├── instance_pool.tf
+│   └── user_data.yaml
+│
+└── autoscaling
+    └── autoscaling.tf
 ```
 
 ---
 
-# 📦 Módulos
+# Requisitos
 
-| Módulo | Descripción |
-|------|-------------|
-| network | Crea VCN, subnets, gateways, route tables y NSG |
-| compute | Crea instance configuration y instance pool |
-| loadbalancer | Implementa OCI Load Balancer |
-| autoscaling | Define políticas de autoscaling |
-| bastion | Bastion host para acceso seguro |
+Antes de desplegar el laboratorio se deben cumplir los siguientes requisitos:
 
----
+| Requisito           | Versión recomendada                     |
+| ------------------- | --------------------------------------- |
+| Terraform           | >= 1.3                                  |
+| OCI CLI             | >= 3.x                                  |
+| Cuenta Oracle Cloud | Activa                                  |
+| Permisos IAM        | Gestión de red, compute y load balancer |
 
-# ⚙️ Requisitos
+Además se debe contar con:
 
-| Herramienta | Versión |
-|-------------|--------|
-| Terraform | >= 1.5 |
-| OCI Provider | >= 5.x |
-| OCI CLI | Opcional |
+* OCID del **compartment**
+* Llaves API configuradas en `~/.oci/config`
 
 ---
 
-# 🔧 Configuración del Provider
+# Configuración del Provider OCI
 
-Terraform utiliza la configuración del **OCI CLI**.
-
-Archivo:
+El provider de OCI utiliza las credenciales configuradas en el archivo estándar de OCI CLI:
 
 ```
 ~/.oci/config
@@ -120,124 +132,199 @@ Ejemplo:
 [DEFAULT]
 user=ocid1.user.oc1...
 fingerprint=xx:xx:xx
-key_file=~/.oci/oci_api_key.pem
 tenancy=ocid1.tenancy.oc1...
 region=us-ashburn-1
-```
-
-Provider:
-
-```hcl
-provider "oci" {
-  config_file_profile = "DEFAULT"
-}
+key_file=~/.oci/oci_api_key.pem
 ```
 
 ---
 
-# 📥 Variables de Entrada
+# Variables del Proyecto
 
-| Nombre | Descripción | Tipo | Default | Requerido |
-|------|-------------|------|--------|-----------|
-| compartment_ocid | OCID del compartment de OCI | string | n/a | Sí |
-| project_name | Prefijo usado para nombrar recursos | string | autoscaling | No |
-| vcn_cidr | CIDR de la VCN | string | 10.0.0.0/16 | No |
-| public_subnet_cidr | CIDR de la subred pública | string | 10.0.1.0/24 | No |
-| private_subnet_cidr | CIDR de la subred privada | string | 10.0.2.0/24 | No |
-| instance_shape | Shape de las instancias | string | VM.Standard.E4.Flex | No |
-| instance_count | Número inicial de instancias | number | 2 | No |
-| tags | Freeform tags para los recursos | map(string) | {{}} | No |
+Las variables principales se definen en `variables.tf`.
+
+| Variable            | Tipo        | Default         | Descripción                                            |
+| ------------------- | ----------- | --------------- | ------------------------------------------------------ |
+| compartment_ocid    | string      | —               | OCID del compartment donde se desplegarán los recursos |
+| project_name        | string      | autoscaling     | Prefijo utilizado para nombrar los recursos            |
+| vcn_cidr            | string      | 10.0.0.0/16     | CIDR principal de la VCN                               |
+| public_subnet_cidr  | string      | 10.0.1.0/24     | CIDR de la subred pública                              |
+| private_subnet_cidr | string      | 10.0.2.0/24     | CIDR de la subred privada                              |
+| tags                | map(string) | environment=dev | Etiquetas aplicadas a los recursos                     |
+
+---
+
+# Archivo terraform.tfvars
+
+El archivo `terraform.tfvars` define los valores específicos del entorno.
 
 Ejemplo:
 
-```hcl
+```
 compartment_ocid = "ocid1.compartment.oc1..."
 project_name     = "oci-autoscaling-lab"
 ```
 
----
-
-# 📤 Outputs
-
-| Output | Descripción |
-|------|-------------|
-| vcn_id | ID de la VCN creada |
-| public_subnet_id | ID de la subred pública |
-| private_subnet_id | ID de la subred privada |
-| loadbalancer_ip | IP pública del Load Balancer |
-| instance_pool_id | ID del Instance Pool |
+Este archivo permite parametrizar el despliegue sin modificar el código Terraform.
 
 ---
 
-# 🚀 Despliegue
+# Etiquetado de Recursos (Tags)
 
-## 1 Clonar repositorio
+El laboratorio incluye soporte para **tags consistentes en todos los recursos**, lo que facilita la administración, auditoría y control de costos.
 
-```bash
-git clone https://github.com/tu-org/terraform-oci-autoscaling.git
-cd terraform-oci-autoscaling
+Ejemplo de estructura:
+
+| Tag         | Valor           | Descripción                 |
+| ----------- | --------------- | --------------------------- |
+| environment | dev             | Ambiente de despliegue      |
+| managed_by  | terraform       | Identifica IaC              |
+| project     | autoscaling-lab | Identificación del proyecto |
+
+Los tags pueden ampliarse fácilmente mediante la variable `tags`.
+
+---
+
+# Despliegue del Laboratorio
+
+Inicializar Terraform:
+
 ```
-
-## 2 Inicializar Terraform
-
-```bash
 terraform init
 ```
 
-## 3 Validar configuración
+Validar la configuración:
 
-```bash
+```
 terraform validate
 ```
 
-## 4 Ver plan
+Visualizar el plan de ejecución:
 
-```bash
+```
 terraform plan
 ```
 
-## 5 Aplicar infraestructura
+Aplicar el despliegue:
 
-```bash
+```
 terraform apply
 ```
 
+Terraform creará automáticamente todos los recursos definidos en el proyecto.
+
 ---
 
-# 📈 Autoscaling
+# Auto Scaling
 
-La infraestructura utiliza **OCI Instance Pools con Autoscaling**.
+El módulo `autoscaling` configura políticas automáticas para el **Instance Pool**.
 
-| Métrica | Acción |
-|------|------|
-| CPU > 70% | Escalar (Scale Out) |
-| CPU < 30% | Reducir (Scale In) |
+El autoscaling permite:
+
+* Incrementar instancias cuando aumenta la carga
+* Reducir instancias cuando disminuye la demanda
+* Optimizar costos y rendimiento
+
+El escalamiento se basa en métricas de OCI como:
+
+| Métrica         | Uso                              |
+| --------------- | -------------------------------- |
+| CPU Utilization | Escalar cuando la carga aumenta  |
+| Instance Count  | Mantener límites mínimo y máximo |
+
+---
+
+# Instance Pool
+
+El Instance Pool permite administrar un conjunto de instancias idénticas creadas a partir de un **Instance Configuration**.
 
 Beneficios:
 
-- Alta disponibilidad
-- Escalabilidad automática
-- Optimización de costos
+* Alta disponibilidad
+* Escalabilidad automática
+* Actualizaciones controladas
+* Integración con Load Balancer
 
 ---
 
-# 🔒 Seguridad
+# Load Balancer
 
-Buenas prácticas implementadas:
+El módulo `loadbalancer` despliega un **Load Balancer público** que distribuye el tráfico entrante hacia las instancias del pool.
 
-- Subred privada para instancias
-- Acceso público solo a través del Load Balancer
-- Bastion host para acceso SSH
-- Network Security Groups
-- Flow Logs habilitados
+Configuración principal:
+
+| Componente   | Función                               |
+| ------------ | ------------------------------------- |
+| Listener     | Recibe tráfico HTTP                   |
+| Backend Set  | Define las instancias backend         |
+| Health Check | Verifica disponibilidad de instancias |
 
 ---
 
-# 🧠 Buenas prácticas DevOps
+# Seguridad
 
-- Infraestructura como Código
-- Arquitectura modular con Terraform
-- Reutilización de módulos
-- Parametrización de variables
-- Estrategia de autoscaling
+La seguridad se implementa mediante:
 
+| Recurso      | Función                             |
+| ------------ | ----------------------------------- |
+| NSG          | Control de tráfico entre recursos   |
+| Bastion Host | Acceso seguro a instancias privadas |
+| Flow Logs    | Auditoría del tráfico de red        |
+
+---
+
+# Outputs
+
+Los outputs definidos en `outputs.tf` exponen información útil después del despliegue.
+
+Ejemplos típicos:
+
+| Output            | Descripción                            |
+| ----------------- | -------------------------------------- |
+| load_balancer_ip  | Dirección IP pública del Load Balancer |
+| bastion_public_ip | IP pública del bastion                 |
+| instance_pool_id  | Identificador del Instance Pool        |
+
+---
+
+# Destrucción del Laboratorio
+
+Para eliminar completamente la infraestructura:
+
+```
+terraform destroy
+```
+
+Esto eliminará todos los recursos creados por Terraform.
+
+---
+
+# Casos de Uso del Laboratorio
+
+Este laboratorio puede utilizarse para:
+
+* Entrenamiento en **OCI Infrastructure as Code**
+* Demostraciones de **Auto Scaling**
+* Pruebas de arquitectura escalable
+* Workshops de **Terraform + OCI**
+* Prácticas de **DevOps Cloud**
+
+---
+
+# Buenas Prácticas Implementadas
+
+Este proyecto sigue buenas prácticas de Terraform y OCI:
+
+* Arquitectura modular
+* Variables parametrizadas
+* Uso de tags
+* Separación de responsabilidades por módulos
+* Infraestructura reproducible
+* Control de versiones con Git
+* Uso de Instance Pool + Autoscaling
+
+---
+
+# Licencia
+
+Este proyecto puede utilizarse con fines educativos, de laboratorio o demostración en entornos Oracle Cloud Infrastructure.
